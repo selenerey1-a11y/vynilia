@@ -15,6 +15,7 @@ import favicon from '~/assets/favicon.svg';
 import {FOOTER_QUERY, HEADER_QUERY} from '~/lib/fragments';
 import resetStyles from '~/styles/reset.css?url';
 import appStyles from '~/styles/app.css?url';
+import vyniliaStyles from '~/styles/vynilia.css?url';
 import {PageLayout} from './components/PageLayout';
 
 export type RootLoader = typeof loader;
@@ -61,6 +62,7 @@ export function links() {
       rel: 'preconnect',
       href: 'https://shop.app',
     },
+    {rel: 'stylesheet', href: vyniliaStyles},
     {rel: 'icon', type: 'image/svg+xml', href: favicon},
   ];
 }

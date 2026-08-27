@@ -3,8 +3,9 @@ import type {CartLayout, LineItemChildrenMap} from '~/components/CartMain';
 import {CartForm, Image, type OptimisticCartLine} from '@shopify/hydrogen';
 import {useVariantUrl} from '~/lib/variants';
 import {Link} from 'react-router';
-import {ProductPrice} from './ProductPrice';
+import {Money} from '@shopify/hydrogen';
 import {useAside} from './Aside';
+import {isDisplayableOption} from '~/lib/tiers';
 import type {
   CartApiQueryFragment,
   CartLineFragment,
@@ -32,6 +33,18 @@ export function CartLineItem({
   const lineItemUrl = useVariantUrl(product.handle, selectedOptions);
   const {close} = useAside();
   const lineItemChildren = childrenMap[id];
+
+  // Shopify only exposes the compare-at price per unit, so the struck-through
+  // figure has to be multiplied out to match the line total beside it.
+  const compareAtPerUnit = line?.cost?.compareAtAmountPerQuantity;
+  const compareAtTotal =
+    compareAtPerUnit &&
+    Number(compareAtPerUnit.amount) > Number(line?.cost?.amountPerQuantity?.amount ?? 0)
+      ? {
+          ...compareAtPerUnit,
+          amount: String(Number(compareAtPerUnit.amount) * line.quantity),
+        }
+      : null;
   const childrenLabelId = `cart-line-children-${id}`;
 
   return (
@@ -48,8 +61,9 @@ export function CartLineItem({
           />
         )}
 
-        <div>
+        <div className="cart-line-body">
           <Link
+            className="cart-line-title"
             prefetch="intent"
             to={lineItemUrl}
             onClick={() => {
@@ -58,20 +72,28 @@ export function CartLineItem({
               }
             }}
           >
-            <p>
-              <strong>{product.title}</strong>
-            </p>
+            {product.title}
           </Link>
-          <ProductPrice price={line?.cost?.totalAmount} />
-          <ul>
-            {selectedOptions.map((option) => (
+
+          <ul className="cart-line-options">
+            {selectedOptions.filter(isDisplayableOption).map((option) => (
               <li key={option.name}>
-                <small>
-                  {option.name}: {option.value}
-                </small>
+                {option.name}: {option.value}
               </li>
             ))}
           </ul>
+
+          <div className="cart-line-price">
+            {compareAtTotal ? (
+              <s>
+                <Money data={compareAtTotal} />
+              </s>
+            ) : null}
+            {line?.cost?.totalAmount ? (
+              <Money data={line.cost.totalAmount} />
+            ) : null}
+          </div>
+
           <CartLineQuantity line={line} />
         </div>
       </div>
@@ -110,29 +132,31 @@ function CartLineQuantity({line}: {line: CartLine}) {
 
   return (
     <div className="cart-line-quantity">
-      <small>Quantity: {quantity} &nbsp;&nbsp;</small>
-      <CartLineUpdateButton lines={[{id: lineId, quantity: prevQuantity}]}>
-        <button
-          aria-label="Decrease quantity"
-          disabled={quantity <= 1 || !!isOptimistic}
-          name="decrease-quantity"
-          value={prevQuantity}
-        >
-          <span>&#8722; </span>
-        </button>
-      </CartLineUpdateButton>
-      &nbsp;
-      <CartLineUpdateButton lines={[{id: lineId, quantity: nextQuantity}]}>
-        <button
-          aria-label="Increase quantity"
-          name="increase-quantity"
-          value={nextQuantity}
-          disabled={!!isOptimistic}
-        >
-          <span>&#43;</span>
-        </button>
-      </CartLineUpdateButton>
-      &nbsp;
+      <div className="qty-stepper">
+        <CartLineUpdateButton lines={[{id: lineId, quantity: prevQuantity}]}>
+          <button
+            aria-label="Restar unidad"
+            disabled={quantity <= 1 || !!isOptimistic}
+            name="decrease-quantity"
+            value={prevQuantity}
+          >
+            &#8722;
+          </button>
+        </CartLineUpdateButton>
+        <span className="qty-value" aria-live="polite">
+          {quantity}
+        </span>
+        <CartLineUpdateButton lines={[{id: lineId, quantity: nextQuantity}]}>
+          <button
+            aria-label="Sumar unidad"
+            name="increase-quantity"
+            value={nextQuantity}
+            disabled={!!isOptimistic}
+          >
+            &#43;
+          </button>
+        </CartLineUpdateButton>
+      </div>
       <CartLineRemoveButton lineIds={[lineId]} disabled={!!isOptimistic} />
     </div>
   );
@@ -157,8 +181,25 @@ function CartLineRemoveButton({
       action={CartForm.ACTIONS.LinesRemove}
       inputs={{lineIds}}
     >
-      <button disabled={disabled} type="submit">
-        Remove
+      <button
+        className="cart-line-remove"
+        disabled={disabled}
+        type="submit"
+        aria-label="Quitar del carrito"
+      >
+        <svg
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="1.7"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          aria-hidden="true"
+        >
+          <path d="M4 7h16M10 11v6M14 11v6" />
+          <path d="M6 7l1 13h10l1-13" />
+          <path d="M9 7V4h6v3" />
+        </svg>
       </button>
     </CartForm>
   );

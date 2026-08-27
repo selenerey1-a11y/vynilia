@@ -4,6 +4,7 @@ import type {CartApiQueryFragment} from 'storefrontapi.generated';
 import {useAside} from '~/components/Aside';
 import {CartLineItem, type CartLine} from '~/components/CartLineItem';
 import {CartSummary} from './CartSummary';
+import {CartShippingBar} from '~/components/CartShippingBar';
 
 export type CartLayout = 'page' | 'aside';
 
@@ -56,11 +57,12 @@ export function CartMain({layout, cart: originalCart}: CartMainProps) {
     >
       <CartEmpty hidden={linesCount} layout={layout} />
       <div className="cart-details">
+        {cartHasItems && <CartShippingBar cart={cart} />}
         <p id="cart-lines" className="sr-only">
           Line items
         </p>
-        <div>
-          <ul aria-labelledby="cart-lines">
+        <div className="cart-lines-scroll">
+          <ul aria-labelledby="cart-lines" className="cart-lines">
             {(cart?.lines?.nodes ?? []).map((line) => {
               // we do not render non-parent lines at the root of the cart
               if (
@@ -94,15 +96,13 @@ function CartEmpty({
 }) {
   const {close} = useAside();
   return (
-    <div hidden={hidden}>
-      <br />
-      <p>
-        Looks like you haven&rsquo;t added anything yet, let&rsquo;s get you
-        started!
-      </p>
-      <br />
-      <Link to="/collections" onClick={close} prefetch="viewport">
-        Continue shopping →
+    <div className="cart-empty" hidden={hidden}>
+      <span className="cart-empty-icon" aria-hidden="true">
+        🎵
+      </span>
+      <p>Tu carrito está vacío. ¿Empezamos por tu Vynilia?</p>
+      <Link to="/products/vynilia" onClick={close} prefetch="viewport">
+        Seguir comprando →
       </Link>
     </div>
   );

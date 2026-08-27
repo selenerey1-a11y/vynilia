@@ -23,19 +23,25 @@ export function Header({
   cart,
   publicStoreDomain,
 }: HeaderProps) {
-  const {shop, menu} = header;
+  const {shop} = header;
   return (
     <header className="header">
-      <NavLink prefetch="intent" to="/" style={activeLinkStyle} end>
-        <strong>{shop.name}</strong>
+      <div className="header-side header-side-left">
+        <HeaderMenuToggle />
+      </div>
+
+      <NavLink prefetch="intent" to="/" className="header-logo" end>
+        <img
+          src="/images/vynilia-logo.png"
+          alt={shop.name}
+          width={402}
+          height={142}
+        />
       </NavLink>
-      <HeaderMenu
-        menu={menu}
-        viewport="desktop"
-        primaryDomainUrl={header.shop.primaryDomain.url}
-        publicStoreDomain={publicStoreDomain}
-      />
-      <HeaderCtas isLoggedIn={isLoggedIn} cart={cart} />
+
+      <div className="header-side header-side-right">
+        <CartToggle cart={cart} />
+      </div>
     </header>
   );
 }
@@ -56,17 +62,9 @@ export function HeaderMenu({
 
   return (
     <nav className={className} role="navigation">
-      {viewport === 'mobile' && (
-        <NavLink
-          end
-          onClick={close}
-          prefetch="intent"
-          style={activeLinkStyle}
-          to="/"
-        >
-          Home
-        </NavLink>
-      )}
+      {/* The skeleton prepended a hardcoded "Home" link here. The Shopify
+          main-menu already starts with one, so it showed up twice once this
+          drawer became the only navigation. */}
       {(menu || FALLBACK_HEADER_MENU).items.map((item) => {
         if (!item.url) return null;
 
@@ -95,43 +93,31 @@ export function HeaderMenu({
   );
 }
 
-function HeaderCtas({
-  isLoggedIn,
-  cart,
-}: Pick<HeaderProps, 'isLoggedIn' | 'cart'>) {
-  return (
-    <nav className="header-ctas" role="navigation">
-      <HeaderMenuMobileToggle />
-      <NavLink prefetch="intent" to="/account" style={activeLinkStyle}>
-        <Suspense fallback="Sign in">
-          <Await resolve={isLoggedIn} errorElement="Sign in">
-            {(isLoggedIn) => (isLoggedIn ? 'Account' : 'Sign in')}
-          </Await>
-        </Suspense>
-      </NavLink>
-      <SearchToggle />
-      <CartToggle cart={cart} />
-    </nav>
-  );
-}
+/* Customer accounts are not wired up yet: the Customer Account API needs a public
+   HTTPS callback URL registered in the Shopify admin, so /account would 404. Add
+   an account link back here once those routes exist. */
 
-function HeaderMenuMobileToggle() {
+function HeaderMenuToggle() {
   const {open} = useAside();
   return (
     <button
-      className="header-menu-mobile-toggle reset"
+      type="button"
+      className="header-icon-btn"
+      aria-label="Abrir menú"
       onClick={() => open('mobile')}
     >
-      <h3>☰</h3>
-    </button>
-  );
-}
-
-function SearchToggle() {
-  const {open} = useAside();
-  return (
-    <button className="reset" onClick={() => open('search')}>
-      Search
+      <svg
+        viewBox="0 0 24 24"
+        width="26"
+        height="26"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+        aria-hidden="true"
+      >
+        <path d="M3 6h18M3 12h18M3 18h18" />
+      </svg>
     </button>
   );
 }
@@ -143,6 +129,8 @@ function CartBadge({count}: {count: number}) {
   return (
     <a
       href="/cart"
+      className="header-icon-btn cart-toggle"
+      aria-label={`Abrir carrito (${count} artículos)`}
       onClick={(e) => {
         e.preventDefault();
         open('cart');
@@ -154,7 +142,22 @@ function CartBadge({count}: {count: number}) {
         } as CartViewPayload);
       }}
     >
-      Cart <span aria-label={`(items: ${count})`}>{count}</span>
+      <svg
+        viewBox="0 0 24 24"
+        width="26"
+        height="26"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="1.8"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        aria-hidden="true"
+      >
+        <circle cx="9.5" cy="20" r="1.3" />
+        <circle cx="18" cy="20" r="1.3" />
+        <path d="M2.5 3.5h2.6l2.4 12a1.5 1.5 0 0 0 1.5 1.2h8.6a1.5 1.5 0 0 0 1.5-1.2l1.4-8.1H6" />
+      </svg>
+      {count > 0 && <span className="cart-count">{count}</span>}
     </a>
   );
 }

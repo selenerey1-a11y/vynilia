@@ -18,9 +18,41 @@ export function CartSummary({cart, layout}: CartSummaryProps) {
   const giftCardHeadingId = useId();
   const giftCardInputId = useId();
 
+  const total = cart?.cost?.subtotalAmount;
+
+  // The drawer is the fast path to checkout: total, button, reassurance. Gift
+  // cards stay on /cart and in Shopify's own checkout, where there is room.
+  if (layout === 'aside') {
+    return (
+      <div aria-labelledby={summaryId} className={className}>
+        <h4 id={summaryId} className="sr-only">
+          Resumen del carrito
+        </h4>
+        <CartDiscounts
+          collapsible
+          discountCodes={cart?.discountCodes}
+          discountsHeadingId={discountsHeadingId}
+          discountCodeInputId={discountCodeInputId}
+        />
+        <div className="cart-total-row">
+          <span>Total estimado</span>
+          <span className="cart-total-amount">
+            {total?.amount ? <Money data={total} as="span" /> : '—'}
+            {total?.currencyCode ? ` ${total.currencyCode}` : null}
+          </span>
+        </div>
+        <CartCheckoutActions checkoutUrl={cart?.checkoutUrl} />
+        <p className="cart-social-proof">
+          <strong>4.8/5</strong> <span aria-hidden="true">|</span> +539 Clientes
+          Satisfechos
+        </p>
+      </div>
+    );
+  }
+
   return (
     <div aria-labelledby={summaryId} className={className}>
-      <h4 id={summaryId}>Totals</h4>
+      <h4 id={summaryId}>Resumen</h4>
       <dl role="group" className="cart-subtotal">
         <dt>Subtotal</dt>
         <dd>
@@ -50,12 +82,9 @@ function CartCheckoutActions({checkoutUrl}: {checkoutUrl?: string}) {
   if (!checkoutUrl) return null;
 
   return (
-    <div>
-      <a href={checkoutUrl} target="_self">
-        <p>Continue to Checkout &rarr;</p>
-      </a>
-      <br />
-    </div>
+    <a className="checkout-cta" href={checkoutUrl} target="_self">
+      Pagar pedido
+    </a>
   );
 }
 
@@ -63,22 +92,38 @@ function CartDiscounts({
   discountCodes,
   discountsHeadingId,
   discountCodeInputId,
+  collapsible = false,
 }: {
   discountCodes?: CartApiQueryFragment['discountCodes'];
   discountsHeadingId: string;
   discountCodeInputId: string;
+  /** In the drawer the field hides behind a link until it is wanted. */
+  collapsible?: boolean;
 }) {
   const codes: string[] =
     discountCodes
       ?.filter((discount) => discount.applicable)
       ?.map(({code}) => code) || [];
 
+  // An already-applied code must stay visible, toggle or not.
+  const [showField, setShowField] = useState(false);
+  const open = !collapsible || showField || codes.length > 0;
+
   return (
-    <section aria-label="Discounts">
+    <section aria-label="Discounts" className="cart-discounts">
+      {collapsible && !open && (
+        <button
+          type="button"
+          className="cart-discount-toggle"
+          onClick={() => setShowField(true)}
+        >
+          ¿Tienes un código de descuento?
+        </button>
+      )}
       {/* Have existing discount, display it with a remove option */}
       <dl hidden={!codes.length}>
         <div>
-          <dt id={discountsHeadingId}>Discounts</dt>
+          <dt id={discountsHeadingId}>Descuentos</dt>
           <UpdateDiscountForm>
             <div
               className="cart-discount"
@@ -87,8 +132,8 @@ function CartDiscounts({
             >
               <code>{codes?.join(', ')}</code>
               &nbsp;
-              <button type="submit" aria-label="Remove discount">
-                Remove
+              <button type="submit" aria-label="Quitar descuento">
+                Quitar
               </button>
             </div>
           </UpdateDiscountForm>
@@ -97,7 +142,7 @@ function CartDiscounts({
 
       {/* Show an input to apply a discount */}
       <UpdateDiscountForm discountCodes={codes}>
-        <div>
+        <div hidden={!open} className="cart-discount-field">
           <label htmlFor={discountCodeInputId} className="sr-only">
             Discount code
           </label>
@@ -105,11 +150,11 @@ function CartDiscounts({
             id={discountCodeInputId}
             type="text"
             name="discountCode"
-            placeholder="Discount code"
+            placeholder="Código de descuento"
           />
           &nbsp;
-          <button type="submit" aria-label="Apply discount code">
-            Apply
+          <button type="submit" aria-label="Aplicar código de descuento">
+            Aplicar
           </button>
         </div>
       </UpdateDiscountForm>
@@ -196,7 +241,7 @@ function CartGiftCard({
     <section aria-label="Gift cards">
       {giftCardCodes && giftCardCodes.length > 0 && (
         <dl>
-          <dt id={giftCardHeadingId}>Applied Gift Card(s)</dt>
+          <dt id={giftCardHeadingId}>Tarjetas regalo aplicadas</dt>
           {giftCardCodes.map((giftCard) => (
             <dd key={giftCard.id} className="cart-discount">
               <RemoveGiftCardForm
@@ -229,16 +274,16 @@ function CartGiftCard({
             id={giftCardInputId}
             type="text"
             name="giftCardCode"
-            placeholder="Gift card code"
+            placeholder="Código de tarjeta regalo"
             ref={giftCardCodeInput}
           />
           &nbsp;
           <button
             type="submit"
             disabled={giftCardAddFetcher.state !== 'idle'}
-            aria-label="Apply gift card code"
+            aria-label="Aplicar tarjeta regalo"
           >
-            Apply
+            Aplicar
           </button>
         </div>
       </AddGiftCardForm>
@@ -289,11 +334,11 @@ function RemoveGiftCardForm({
       &nbsp;
       <button
         type="submit"
-        aria-label={`Remove gift card ending in ${lastCharacters}`}
+        aria-label={`Quitar tarjeta regalo terminada en ${lastCharacters}`}
         onClick={onRemoveClick}
         ref={buttonRef}
       >
-        Remove
+        Quitar
       </button>
     </CartForm>
   );

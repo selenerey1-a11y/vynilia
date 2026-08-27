@@ -17,10 +17,13 @@ const graphqlConfig: IGraphQLConfig = {
       ],
     },
 
-    customer: {
-      schema: getSchema('customer-account'),
-      documents: ['./app/graphql/customer-account/*.{ts,tsx,js,jsx}'],
-    },
+    // The customer-account project is disabled because this storefront has no
+    // account routes yet, and codegen fails when its documents glob is empty.
+    // Restore it once `app/graphql/customer-account/` has queries again:
+    // customer: {
+    //   schema: getSchema('customer-account'),
+    //   documents: ['./app/graphql/customer-account/*.{ts,tsx,js,jsx}'],
+    // },
 
     // Add your own GraphQL projects here for CMS, Shopify Admin API, etc.
   },

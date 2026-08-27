@@ -28,10 +28,13 @@ export function Aside({
   children,
   heading,
   type,
+  variant,
 }: {
   children?: React.ReactNode;
   type: AsideType;
   heading: React.ReactNode;
+  /** Adds an `aside-<variant>` class so one drawer can be skinned on its own. */
+  variant?: string;
 }) {
   const {type: activeType, close} = useAside();
   const expanded = type === activeType;
@@ -56,7 +59,9 @@ export function Aside({
   return (
     <div
       aria-modal
-      className={`overlay ${expanded ? 'expanded' : ''}`}
+      className={`overlay ${variant ? `aside-${variant}` : ''} ${
+        expanded ? 'expanded' : ''
+      }`}
       role="dialog"
       aria-labelledby={id}
     >
@@ -64,7 +69,7 @@ export function Aside({
       <aside>
         <header>
           <h3 id={id}>{heading}</h3>
-          <button className="close reset" onClick={close} aria-label="Close">
+          <button className="close reset" onClick={close} aria-label="Cerrar">
             &times;
           </button>
         </header>

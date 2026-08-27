@@ -1,4 +1,8 @@
 import {Link} from 'react-router';
+import {Image, Money} from '@shopify/hydrogen';
+import type {Route} from './+types/_index';
+
+const FEATURED_HANDLE = 'vynilia';
 
 const features = [
   '🎵 Tu canción personalizada',
@@ -7,7 +11,29 @@ const features = [
   '🚚 Envío rápido a todo el país',
 ];
 
-export default function HomePage() {
+export const meta: Route.MetaFunction = () => {
+  return [
+    {title: 'Vynilia | El regalo que deja sin palabras'},
+    {
+      name: 'description',
+      content:
+        'Personaliza tu canción con tus fotos y conviértela en un recuerdo que suena.',
+    },
+  ];
+};
+
+export async function loader({context}: Route.LoaderArgs) {
+  const {product} = await context.storefront.query(FEATURED_PRODUCT_QUERY, {
+    variables: {handle: FEATURED_HANDLE},
+  });
+
+  return {product};
+}
+
+export default function HomePage({loaderData}: Route.ComponentProps) {
+  const {product} = loaderData;
+  const productUrl = product ? `/products/${product.handle}` : '/collections/all';
+
   return (
     <div className="vynilia-page">
       <section className="hero-section">
@@ -19,10 +45,10 @@ export default function HomePage() {
             convierte cada detalle en un momento inolvidable.
           </p>
           <div className="hero-actions">
-            <Link to="/products/vynilia" className="primary-btn">
+            <Link to={productUrl} className="primary-btn">
               Personaliza el tuyo
             </Link>
-            <Link to="/products/vynilia" className="secondary-btn">
+            <Link to={productUrl} className="secondary-btn">
               Ver producto
             </Link>
           </div>
@@ -34,20 +60,46 @@ export default function HomePage() {
         </div>
 
         <div className="hero-visual">
-          <div className="product-card">
+          <Link to={productUrl} className="product-card" prefetch="intent">
             <div className="product-card-badge">Oferta limitada</div>
-            <img
-              src="https://images.unsplash.com/photo-1516280440614-37939bbacd81?auto=format&fit=crop&w=900&q=80"
-              alt="Vynilia product"
-            />
+            {product?.featuredImage ? (
+              <Image
+                data={product.featuredImage}
+                alt={product.featuredImage.altText || product.title}
+                sizes="(min-width: 900px) 45vw, 100vw"
+              />
+            ) : (
+              <img
+                src="/images/vynilia-1.webp"
+                alt="Reproductor Vynilia con sus nueve vinilos personalizados"
+              />
+            )}
             <div className="product-card-footer">
               <div>
                 <span className="tiny-label">Desde</span>
-                <strong>€49,97</strong>
+                <strong>
+                  {product ? (
+                    <Money
+                      data={product.priceRange.minVariantPrice}
+                      as="span"
+                    />
+                  ) : (
+                    '€44,99'
+                  )}
+                </strong>
               </div>
-              <span className="old-price">€69,97</span>
+              {product?.compareAtPriceRange?.minVariantPrice?.amount &&
+              Number(product.compareAtPriceRange.minVariantPrice.amount) >
+                Number(product.priceRange.minVariantPrice.amount) ? (
+                <span className="old-price">
+                  <Money
+                    data={product.compareAtPriceRange.minVariantPrice}
+                    as="span"
+                  />
+                </span>
+              ) : null}
             </div>
-          </div>
+          </Link>
         </div>
       </section>
 
@@ -61,7 +113,7 @@ export default function HomePage() {
           <span>Regalos personalizados</span>
         </div>
         <div>
-          <strong>2-3 días</strong>
+          <strong>4-8 días</strong>
           <span>Entrega estimada</span>
         </div>
       </section>
@@ -93,3 +145,36 @@ export default function HomePage() {
     </div>
   );
 }
+
+const FEATURED_PRODUCT_QUERY = `#graphql
+  query FeaturedProduct(
+    $handle: String!
+    $country: CountryCode
+    $language: LanguageCode
+  ) @inContext(country: $country, language: $language) {
+    product(handle: $handle) {
+      id
+      title
+      handle
+      featuredImage {
+        id
+        url
+        altText
+        width
+        height
+      }
+      priceRange {
+        minVariantPrice {
+          amount
+          currencyCode
+        }
+      }
+      compareAtPriceRange {
+        minVariantPrice {
+          amount
+          currencyCode
+        }
+      }
+    }
+  }
+` as const;

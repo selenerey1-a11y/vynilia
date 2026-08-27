@@ -11,6 +11,9 @@
   --muted: #6f665d;
   --line: #e6ddd2;
   --shadow: 0 18px 50px rgba(60, 40, 25, 0.1);
+  /* Every band down the page is spaced by this, so tightening the rhythm is a
+     one-line change instead of a hunt through the file. */
+  --section-gap: 46px;
   --radius: 14px;
 }
 
@@ -50,7 +53,7 @@ a {
 .vynilia-page {
   max-width: 1240px;
   margin: 0 auto;
-  padding: 24px 20px 120px;
+  padding: 24px 20px 72px;
 }
 
 /* The dark FAQ panel breaks out of the container right below the videos, so the
@@ -613,29 +616,7 @@ a.product-rating:hover .rating-text {
 
 .steps-section,
 .reviews-section {
-  margin-top: 64px;
-}
-
-.tagline-banner {
-  margin-top: 64px;
-  background: var(--primary-color);
-  color: #fff;
-  border-radius: var(--radius);
-  padding: 56px 24px;
-  text-align: center;
-}
-
-.tagline-banner p {
-  margin: 0;
-  opacity: 0.65;
-  font-size: 20px;
-}
-
-.tagline-banner h2 {
-  margin: 6px 0 0;
-  font-size: 40px;
-  font-weight: 800;
-  letter-spacing: -0.03em;
+  margin-top: var(--section-gap);
 }
 
 .steps-grid {
@@ -708,7 +689,8 @@ a.product-rating:hover .rating-text {
   margin-top: 28px;
 }
 
-.ugc-title {
+.ugc-title,
+.tc-headline {
   margin: 0 0 28px;
   text-align: center;
   font-size: clamp(28px, 4.4vw, 46px);
@@ -852,10 +834,6 @@ a.product-rating:hover .rating-text {
 }
 
 @media (max-width: 768px) {
-  .ugc-section {
-    margin-top: 56px;
-  }
-
   .ugc-slide {
     width: clamp(170px, 52vw, 240px);
   }
@@ -881,8 +859,8 @@ a.product-rating:hover .rating-text {
   position: relative;
   background: var(--primary-color);
   color: #fff;
-  padding: 104px 0 116px;
-  margin-top: 24px;
+  padding: 76px 0 84px;
+  margin-top: 20px;
 }
 
 .faq-wave {
@@ -1015,7 +993,7 @@ a.product-rating:hover .rating-text {
 }
 
 .trust-band {
-  margin-top: 64px;
+  margin-top: var(--section-gap);
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
   gap: 12px;
@@ -1444,10 +1422,6 @@ html:has(.overlay.expanded) .sticky-buy-bar {
     font-size: 30px;
   }
 
-  .tagline-banner h2 {
-    font-size: 30px;
-  }
-
   /* On mobile the bar covers the page and duplicates the in-page button. */
   .sticky-buy-bar {
     display: none;
@@ -1519,31 +1493,218 @@ html:has(.overlay.expanded) .sticky-buy-bar {
   font-size: 14px;
 }
 
-/* ---------- Two-tier offer: bundle cards + comparison ---------- */
+/* ---------- Two-tier offer: bundle cards ---------- */
 
-.compare-section {
-  margin-top: 64px;
-}
+/* ---------- Tier comparison ---------- */
 
-/* The comparison is one wide graphic. It fits at full width from tablet up;
-   below that its text would shrink past legibility, so the figure scrolls
-   sideways at a readable size instead of shrinking to fit. */
-.compare-figure {
-  overflow-x: auto;
-  overscroll-behavior-x: contain;
+/* A real table: the icon sits in its own gutter and the two versions share every
+   row, so they stay side by side all the way down to a narrow phone instead of
+   stacking into "read one, then the other". */
+.tier-comparison {
+  margin-top: var(--section-gap);
+  padding: 30px 22px 22px;
   border-radius: var(--radius);
+  background: linear-gradient(180deg, #ffffff 0%, #faf8fd 100%);
   box-shadow: var(--shadow);
-  background: var(--surface);
+  --tc-purple: #4b2a87;
+  --tc-lilac: #f4f0fb;
+  --tc-lilac-line: #e3daf5;
+  --tc-gutter: 58px;
 }
 
-.compare-figure img {
-  display: block;
+.tc-headline {
+  margin-bottom: 6px;
+}
+
+.tc-subtitle {
+  margin: 0;
+  text-align: center;
+  font-size: clamp(14px, 1.6vw, 19px);
+  color: var(--muted);
+}
+
+.tc-table {
+  width: 100%;
+  margin-top: 22px;
+  border-collapse: collapse;
+  table-layout: fixed;
+}
+
+/* The gutter is fixed so the two version columns always split what is left
+   evenly, however narrow the screen gets. */
+.tc-gutter {
+  width: var(--tc-gutter);
+  padding: 0;
+  vertical-align: middle;
+  text-align: center;
+}
+
+.tc-row-icon {
+  display: inline-grid;
+  place-items: center;
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  background: var(--tc-purple);
+  color: #fff;
+}
+
+.tc-row-icon svg {
+  width: 20px;
+  height: 20px;
+}
+
+/* Both heads carry the same top padding — only the Pro one shows it, as the
+   breathing room above its tinted background, but matching it keeps the two
+   photos on exactly the same line. */
+.tc-head {
+  padding: 14px 12px 16px;
+  vertical-align: bottom;
+  text-align: center;
+  font-weight: 400;
+}
+
+.tc-photo {
   width: 100%;
   height: auto;
+  border-radius: 10px;
 }
 
-.compare-hint {
-  display: none;
+/* Block, not inline-flex: as inline boxes the badge and its spacer sat on
+   different baselines (the spacer has no text) and knocked the two photos 4px
+   out of line. */
+.tc-flag,
+.tc-flag-spacer {
+  display: flex;
+  align-items: center;
+  width: fit-content;
+  height: 26px;
+  margin: -12px auto 0;
+}
+
+.tc-flag {
+  gap: 5px;
+  padding: 0 12px;
+  border-radius: 999px;
+  background: var(--tc-purple);
+  color: #fff;
+  font-size: clamp(10px, 1.1vw, 12px);
+  font-weight: 800;
+  letter-spacing: 0.03em;
+  white-space: nowrap;
+}
+
+.tc-name {
+  display: block;
+  margin-top: 10px;
+  font-family: Georgia, 'Times New Roman', serif;
+  font-size: clamp(16px, 2.4vw, 28px);
+  line-height: 1.15;
+  letter-spacing: 0.01em;
+  color: var(--primary-color);
+}
+
+.tc-head.is-pro .tc-name {
+  color: var(--tc-purple);
+}
+
+.tc-tagline {
+  display: block;
+  margin-top: 4px;
+  font-family: 'Inter', 'Segoe UI', sans-serif;
+  font-size: clamp(12px, 1.3vw, 15px);
+  color: var(--muted);
+}
+
+.tc-cell {
+  padding: 13px 12px;
+  vertical-align: top;
+  text-align: center;
+  border-top: 1px solid var(--line);
+}
+
+.tc-cell strong {
+  display: block;
+  font-size: clamp(13px, 1.5vw, 17px);
+  font-weight: 800;
+  line-height: 1.25;
+  color: var(--primary-color);
+}
+
+.tc-cell.is-pro strong {
+  color: var(--tc-purple);
+}
+
+.tc-note {
+  display: block;
+  margin-top: 3px;
+  font-size: clamp(11px, 1.2vw, 14px);
+  line-height: 1.35;
+  color: var(--muted);
+}
+
+/* The Pro column is tinted end to end, header included, and rounded top and
+   bottom so it reads as one highlighted band. */
+.is-pro {
+  background: var(--tc-lilac);
+}
+
+.tc-head.is-pro {
+  border-radius: 14px 14px 0 0;
+}
+
+.tc-cell.is-pro {
+  border-top-color: var(--tc-lilac-line);
+}
+
+.tc-table tbody tr:last-child .tc-cell.is-pro {
+  border-radius: 0 0 14px 14px;
+}
+
+@media (max-width: 760px) {
+  .tier-comparison {
+    padding: 24px 12px 16px;
+    --tc-gutter: 44px;
+  }
+
+  .tc-row-icon {
+    width: 32px;
+    height: 32px;
+  }
+
+  .tc-row-icon svg {
+    width: 17px;
+    height: 17px;
+  }
+
+  .tc-head,
+  .tc-cell {
+    padding-left: 7px;
+    padding-right: 7px;
+  }
+}
+
+/* Below this the gutter icon costs more than it explains. */
+@media (max-width: 400px) {
+  .tier-comparison {
+    --tc-gutter: 34px;
+  }
+
+  .tc-row-icon {
+    width: 26px;
+    height: 26px;
+  }
+
+  .tc-row-icon svg {
+    width: 14px;
+    height: 14px;
+  }
+
+  .tc-head,
+  .tc-cell {
+    padding-left: 5px;
+    padding-right: 5px;
+  }
 }
 
 /* ---------- Guarantee banner ---------- */
@@ -1551,7 +1712,7 @@ html:has(.overlay.expanded) .sticky-buy-bar {
 /* Square artwork, so it is capped rather than stretched to the page width —
    at 1240px it would tower over everything around it. */
 .guarantee-banner {
-  margin-top: 64px;
+  margin-top: var(--section-gap);
   display: flex;
   justify-content: center;
 }
@@ -1563,23 +1724,6 @@ html:has(.overlay.expanded) .sticky-buy-bar {
   height: auto;
   border-radius: var(--radius);
   box-shadow: var(--shadow);
-}
-
-@media (max-width: 760px) {
-  /* Overrides the global `img { max-width: 100% }` so the graphic can stay
-     wider than its scroll container. */
-  .compare-figure img {
-    width: 760px;
-    max-width: none;
-  }
-
-  .compare-hint {
-    display: block;
-    margin: 10px 0 0;
-    text-align: center;
-    font-size: 13px;
-    color: var(--muted);
-  }
 }
 
 @media (max-width: 560px) {
@@ -2546,7 +2690,7 @@ body > main {
 /* ---------- Product reviews module ---------- */
 
 .rv-section {
-  margin-top: 64px;
+  margin-top: var(--section-gap);
   /* Breathing room when the rating line jumps down to this anchor. */
   scroll-margin-top: 24px;
 }
@@ -3179,5 +3323,126 @@ body > main {
 
   .dt-label {
     font-size: 12px;
+  }
+}
+
+/* ---------- Urgency ticket ---------- */
+
+/* A real ticket shape: the two notches are circles of page background punched
+   into the sides, so it reads as a torn stub rather than another card. */
+.urgency-ticket {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  margin-top: var(--section-gap);
+  padding: 20px 34px;
+  border-radius: 14px;
+  background: var(--accent-color);
+  color: #fff;
+  overflow: hidden;
+}
+
+.ut-notch {
+  position: absolute;
+  top: 50%;
+  width: 26px;
+  height: 26px;
+  transform: translateY(-50%);
+  border-radius: 50%;
+  background: var(--cream);
+}
+
+.ut-notch-left {
+  left: -13px;
+}
+
+.ut-notch-right {
+  right: -13px;
+}
+
+.ut-icon {
+  flex-shrink: 0;
+  display: grid;
+  place-items: center;
+  width: 46px;
+  height: 46px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.16);
+  color: #fff;
+}
+
+.ut-icon svg {
+  width: 24px;
+  height: 24px;
+}
+
+.ut-body {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.ut-eyebrow {
+  display: block;
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--accent-soft);
+}
+
+.ut-line {
+  margin: 4px 0 0;
+  font-size: 16px;
+  line-height: 1.4;
+}
+
+.ut-line b {
+  font-weight: 800;
+}
+
+.ut-meter {
+  flex: 0 0 220px;
+  display: grid;
+  gap: 7px;
+  justify-items: end;
+}
+
+.ut-meter-track {
+  width: 100%;
+  height: 7px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.22);
+  overflow: hidden;
+}
+
+.ut-meter-fill {
+  display: block;
+  height: 100%;
+  border-radius: 999px;
+  background: var(--accent-soft);
+}
+
+.ut-meter-label {
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  color: rgba(255, 255, 255, 0.82);
+}
+
+@media (max-width: 760px) {
+  .urgency-ticket {
+    flex-wrap: wrap;
+    gap: 14px;
+    padding: 18px 22px;
+  }
+
+  .ut-meter {
+    flex: 1 1 100%;
+    justify-items: stretch;
+  }
+
+  .ut-meter-label {
+    text-align: center;
   }
 }

@@ -17,6 +17,8 @@ import {AddToCartButton} from '~/components/AddToCartButton';
 import {useAside} from '~/components/Aside';
 import {HIDDEN_OPTIONS, isProValue, TIER_NAMES, tierLabel} from '~/lib/tiers';
 import {DeliveryTimeline} from '~/components/DeliveryTimeline';
+import {TierComparison} from '~/components/TierComparison';
+import {UrgencyTicket} from '~/components/UrgencyTicket';
 import {CustomerVideos} from '~/components/CustomerVideos';
 import {ProductReviews} from '~/components/ProductReviews';
 import {reviews as seedReviews} from '~/data/reviews';
@@ -578,7 +580,9 @@ export default function ProductPage({loaderData}: Route.ComponentProps) {
   const [selectedImage, setSelectedImage] = useState(0);
   const [quantity, setQuantity] = useState(1);
   const [openFaq, setOpenFaq] = useState<number | null>(0);
-  const [openPanel, setOpenPanel] = useState<string | null>('includes');
+  // Every panel closed to start with: the customer opens the one they care
+  // about instead of scrolling past one that was opened for them.
+  const [openPanel, setOpenPanel] = useState<string | null>(null);
   const [confetti, setConfetti] = useState<CSSProperties[]>([]);
 
   const isPro = selectedVariant?.selectedOptions?.some((option) =>
@@ -841,26 +845,9 @@ export default function ProductPage({loaderData}: Route.ComponentProps) {
       />
 
       <div className="vynilia-page">
-        <section className="compare-section" aria-labelledby="comparativa">
-          {/* The artwork carries its own title, so the heading is kept for
-              structure and screen readers only. */}
-          <h2 id="comparativa" className="sr-only">
-            Compara las dos versiones
-          </h2>
-          <div className="compare-figure">
-            <img
-              src="/images/comparativa-vynilia.webp"
-              width={1536}
-              height={1024}
-              loading="lazy"
-              decoding="async"
-              alt={`Comparativa. ${TIER_NAMES.base}: ${TIERS.base.discs} vinilos con vuestras fotos, sube cualquier canción, ${TIERS.base.shipping.toLowerCase()} y garantía de ${TIERS.base.guaranteeDays} días. ${TIER_NAMES.pro}, la más elegida: ${TIERS.pro.discs} vinilos con vuestras fotos, sube cualquier canción, envío express gratis y garantía premium de ${TIERS.pro.guaranteeDays} días.`}
-            />
-          </div>
-          <p className="compare-hint">
-            Desliza para ver la comparativa completa
-          </p>
-        </section>
+        <TierComparison base={TIERS.base} pro={TIERS.pro} />
+
+        <UrgencyTicket compareAtPrice={compareAtPrice} />
 
         <section className="guarantee-banner" aria-labelledby="garantia">
           {/* Same as the comparison: the artwork carries its own headline. */}
@@ -876,11 +863,6 @@ export default function ProductPage({loaderData}: Route.ComponentProps) {
             decoding="async"
             alt={`${TIERS.pro.guaranteeDays} días de garantía con tu ${TIER_NAMES.pro}. Más tiempo para disfrutar, más tranquilidad para ti: garantía premium de ${TIERS.pro.guaranteeDays} días, compra segura y protegida, atención al cliente personalizada y calidad premium garantizada.`}
           />
-        </section>
-
-        <section className="tagline-banner">
-          <p>No es un altavoz.</p>
-          <h2>Es un recuerdo.</h2>
         </section>
 
         <section className="steps-section">

@@ -8,3 +8,6 @@ node_modules
 .shopify
 .react-router
 tsconfig.tsbuildinfo
+
+dev-server.log
+dev-server.err.log

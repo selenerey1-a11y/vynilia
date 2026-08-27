@@ -8,7 +8,7 @@ const features = [
   '🎵 Tu canción personalizada',
   '📸 Con tus fotos y recuerdos',
   '🎨 Diseño premium y moderno',
-  '🚚 Envío rápido a todo el país',
+  '🚚 Envío a toda España peninsular',
 ];
 
 export const meta: Route.MetaFunction = () => {
@@ -71,7 +71,7 @@ export default function HomePage({loaderData}: Route.ComponentProps) {
             ) : (
               <img
                 src="/images/vynilia-1.webp"
-                alt="Reproductor Vynilia con sus nueve vinilos personalizados"
+                alt="Reproductor Vynilia con sus vinilos personalizados"
               />
             )}
             <div className="product-card-footer">

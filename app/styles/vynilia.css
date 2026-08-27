@@ -53,6 +53,12 @@ a {
   padding: 24px 20px 120px;
 }
 
+/* The dark FAQ panel breaks out of the container right below the videos, so the
+   container's end-of-page padding would just leave a hole above its wave. */
+.vynilia-page.ends-at-faq {
+  padding-bottom: 0;
+}
+
 .section-title {
   font-size: 26px;
   font-weight: 800;
@@ -699,7 +705,7 @@ a.product-rating:hover .rating-text {
 /* ---------- Customer video carousel (UGC) ---------- */
 
 .ugc-section {
-  margin-top: 72px;
+  margin-top: 28px;
 }
 
 .ugc-title {
@@ -1442,13 +1448,9 @@ html:has(.overlay.expanded) .sticky-buy-bar {
     font-size: 30px;
   }
 
-  .sticky-info {
-    font-size: 13px;
-  }
-
-  .sticky-buy-bar .btn-add-to-cart {
-    max-width: 200px;
-    font-size: 14px;
+  /* On mobile the bar covers the page and duplicates the in-page button. */
+  .sticky-buy-bar {
+    display: none;
   }
 }
 
@@ -1523,63 +1525,61 @@ html:has(.overlay.expanded) .sticky-buy-bar {
   margin-top: 64px;
 }
 
-.compare-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-  gap: 18px;
-}
-
-.compare-card {
-  position: relative;
-  background: var(--surface);
-  border: 2px solid var(--line);
+/* The comparison is one wide graphic. It fits at full width from tablet up;
+   below that its text would shrink past legibility, so the figure scrolls
+   sideways at a readable size instead of shrinking to fit. */
+.compare-figure {
+  overflow-x: auto;
+  overscroll-behavior-x: contain;
   border-radius: var(--radius);
-  padding: 24px;
+  box-shadow: var(--shadow);
+  background: var(--surface);
 }
 
-.compare-card.active {
-  border-color: var(--accent-color);
+.compare-figure img {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+.compare-hint {
+  display: none;
+}
+
+/* ---------- Guarantee banner ---------- */
+
+/* Square artwork, so it is capped rather than stretched to the page width —
+   at 1240px it would tower over everything around it. */
+.guarantee-banner {
+  margin-top: 64px;
+  display: flex;
+  justify-content: center;
+}
+
+.guarantee-banner img {
+  display: block;
+  width: 100%;
+  max-width: 620px;
+  height: auto;
+  border-radius: var(--radius);
   box-shadow: var(--shadow);
 }
 
-.compare-card h3 {
-  margin: 0 0 14px;
-  font-size: 22px;
-  font-weight: 800;
-}
+@media (max-width: 760px) {
+  /* Overrides the global `img { max-width: 100% }` so the graphic can stay
+     wider than its scroll container. */
+  .compare-figure img {
+    width: 760px;
+    max-width: none;
+  }
 
-.compare-card ul {
-  list-style: none;
-  padding: 0;
-  margin: 0;
-  display: grid;
-  gap: 10px;
-}
-
-.compare-card li {
-  padding-left: 26px;
-  position: relative;
-  line-height: 1.5;
-}
-
-.compare-card li:before {
-  content: '✓';
-  position: absolute;
-  left: 0;
-  color: var(--accent-color);
-  font-weight: 800;
-}
-
-.compare-flag {
-  position: absolute;
-  top: -12px;
-  right: 18px;
-  background: var(--accent-color);
-  color: #fff;
-  font-size: 12px;
-  font-weight: 800;
-  padding: 5px 12px;
-  border-radius: 999px;
+  .compare-hint {
+    display: block;
+    margin: 10px 0 0;
+    text-align: center;
+    font-size: 13px;
+    color: var(--muted);
+  }
 }
 
 @media (max-width: 560px) {
@@ -3013,4 +3013,171 @@ body > main {
   margin: 0;
   font-size: 16px;
   font-weight: 600;
+}
+
+/* ---------- Delivery timeline + payment marks (under the buy button) ---------- */
+
+.delivery-timeline {
+  margin: 22px 0 4px;
+  padding: 22px 8px 20px;
+  border-top: 1px solid var(--line);
+  border-bottom: 1px solid var(--line);
+}
+
+.dt-steps {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.dt-step {
+  position: relative;
+  display: grid;
+  justify-items: center;
+  gap: 8px;
+  text-align: center;
+}
+
+/* The connector runs from the previous circle's centre to this one's, behind
+   both, so the icons sit on top of an unbroken line. */
+.dt-step + .dt-step::before {
+  content: '';
+  position: absolute;
+  top: 26px;
+  right: 50%;
+  left: -50%;
+  height: 3px;
+  background: var(--primary-color);
+}
+
+.dt-icon {
+  position: relative;
+  z-index: 1;
+  width: 52px;
+  height: 52px;
+  border-radius: 50%;
+  background: var(--primary-color);
+  color: #fff;
+  display: grid;
+  place-items: center;
+}
+
+.dt-icon svg {
+  width: 26px;
+  height: 26px;
+}
+
+.dt-step strong {
+  font-size: 15px;
+  font-weight: 800;
+  color: var(--primary-color);
+  margin-top: 2px;
+}
+
+/* Scoped to the label: .dt-icon is a span too, and a bare `.dt-step span`
+   out-specifies its white colour and turns the icons muted. */
+.dt-label {
+  font-size: 14px;
+  color: var(--muted);
+}
+
+.dt-payments {
+  margin-top: 22px;
+}
+
+.dt-payments-label {
+  display: block;
+  text-align: center;
+  font-size: 13px;
+  color: var(--muted);
+  margin-bottom: 10px;
+}
+
+.dt-pay-list {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 8px;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.dt-pay {
+  display: grid;
+  place-items: center;
+  height: 30px;
+  min-width: 54px;
+  padding: 0 10px;
+  border-radius: 6px;
+  background: #fff;
+  border: 1px solid var(--line);
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.01em;
+  color: var(--primary-color);
+}
+
+.dt-pay-visa {
+  color: #1a1f71;
+  font-style: italic;
+  font-size: 14px;
+  letter-spacing: 0.04em;
+}
+
+.dt-pay-amex {
+  background: #006fcf;
+  border-color: #006fcf;
+  color: #fff;
+}
+
+.dt-pay-shop {
+  background: #5a31f4;
+  border-color: #5a31f4;
+  color: #fff;
+}
+
+.dt-pay-apple {
+  background: #000;
+  border-color: #000;
+  color: #fff;
+}
+
+.dt-pay-mastercard {
+  padding: 0 8px;
+}
+
+.dt-pay-mc {
+  width: 38px;
+  height: 23px;
+}
+
+@media (max-width: 480px) {
+  .delivery-timeline {
+    padding: 18px 0 16px;
+  }
+
+  .dt-icon {
+    width: 44px;
+    height: 44px;
+  }
+
+  .dt-icon svg {
+    width: 22px;
+    height: 22px;
+  }
+
+  .dt-step + .dt-step::before {
+    top: 22px;
+  }
+
+  .dt-step strong {
+    font-size: 13px;
+  }
+
+  .dt-label {
+    font-size: 12px;
+  }
 }

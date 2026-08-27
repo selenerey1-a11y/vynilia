@@ -1,5 +1,7 @@
 import {useEffect, useState} from 'react';
 
+import {TIER_NAMES} from '~/lib/tiers';
+
 const OFFER_MINUTES = 45;
 
 function useCountdown(totalMinutes: number) {
@@ -54,8 +56,8 @@ export function PromoBar() {
         <div className="announcement-track">
           {Array.from({length: 4}).map((_, index) => (
             <span key={index}>
-              🎁 ¡Regalos con tu Compra! 🎁 · Envío Express GRATIS con Vynilia
-              Pro ·
+              🎁 ¡Regalos con tu Compra! 🎁 · Envío Express GRATIS con{' '}
+              {TIER_NAMES.pro} ·
             </span>
           ))}
         </div>

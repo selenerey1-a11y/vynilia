@@ -1,6 +1,6 @@
 import type {CartApiQueryFragment} from 'storefrontapi.generated';
 import type {OptimisticCart} from '@shopify/hydrogen';
-import {isProValue} from '~/lib/tiers';
+import {isProValue, TIER_NAMES} from '~/lib/tiers';
 
 /**
  * Free express shipping is what the Pro tier buys, so the drawer's progress bar
@@ -33,7 +33,8 @@ export function CartShippingBar({
           </>
         ) : (
           <>
-            Cambia a <strong>Vynilia Pro</strong> y tu envío express es gratis
+            Cambia a <strong>{TIER_NAMES.pro}</strong> y tu envío express es
+            gratis
           </>
         )}
       </p>

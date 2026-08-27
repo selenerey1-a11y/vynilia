@@ -15,7 +15,8 @@ import {
 import type {MappedProductOptions} from '@shopify/hydrogen';
 import {AddToCartButton} from '~/components/AddToCartButton';
 import {useAside} from '~/components/Aside';
-import {HIDDEN_OPTIONS, isProValue} from '~/lib/tiers';
+import {HIDDEN_OPTIONS, isProValue, TIER_NAMES, tierLabel} from '~/lib/tiers';
+import {DeliveryTimeline} from '~/components/DeliveryTimeline';
 import {CustomerVideos} from '~/components/CustomerVideos';
 import {ProductReviews} from '~/components/ProductReviews';
 import {reviews as seedReviews} from '~/data/reviews';
@@ -32,6 +33,12 @@ type Tier = {
   includes: string[];
   music: string;
   shipping: string;
+  /**
+   * Business days in transit once the parcel leaves the workshop, on top of the
+   * 1-3 it takes to make. Copy-only, like the free express itself: no carrier
+   * rate in the admin backs the Pro's window yet.
+   */
+  transit: {min: number; max: number};
   /** Length of the money-back window, which the Pro tier doubles. */
   guaranteeDays: number;
   /** How that window is named wherever it is shown as a heading. */
@@ -46,6 +53,7 @@ const TIERS: Record<TierKey, Tier> = {
     extras: [],
     music: 'Sube cualquier canción que quieras',
     shipping: 'Envío estándar',
+    transit: {min: 3, max: 5},
     guaranteeDays: 30,
     guaranteeLabel: 'Garantía de 30 días',
     includes: [
@@ -67,6 +75,7 @@ const TIERS: Record<TierKey, Tier> = {
     ],
     music: 'Sube cualquier canción que quieras',
     shipping: 'Envío express GRATIS',
+    transit: {min: 1, max: 2},
     guaranteeDays: 60,
     guaranteeLabel: 'Garantía premium de 60 días',
     includes: [
@@ -141,7 +150,10 @@ function buildInfoPanels(tier: Tier): InfoPanel[] {
             en dejar tu pedido listo.
           </p>
           <p>
-            <strong>🚚 Entrega:</strong> de <strong>3 a 5 días hábiles</strong>{' '}
+            <strong>🚚 Entrega:</strong> de{' '}
+            <strong>
+              {tier.transit.min} a {tier.transit.max} días hábiles
+            </strong>{' '}
             desde que sale de nuestro taller. Enviamos a toda España peninsular
             con número de seguimiento.
           </p>
@@ -475,12 +487,12 @@ const steps = [
 
 const faqs = [
   {
-    q: '¿Qué diferencia hay entre Vynilia y Vynilia Pro?',
-    a: 'Las dos te dejan poner tus propias canciones. Vynilia incluye 4 vinilos, envío estándar y 30 días de garantía. Vynilia Pro incluye 9 vinilos, envío express gratis y garantía premium de 60 días. Son 5 € de diferencia.',
+    q: `¿Qué diferencia hay entre ${TIER_NAMES.base} y ${TIER_NAMES.pro}?`,
+    a: `Las dos te dejan poner tus propias canciones. ${TIER_NAMES.base} incluye ${TIERS.base.discs} vinilos, envío estándar y garantía de ${TIERS.base.guaranteeDays} días. ${TIER_NAMES.pro} incluye ${TIERS.pro.discs} vinilos, envío express gratis y garantía premium de ${TIERS.pro.guaranteeDays} días. Son 5 € de diferencia.`,
   },
   {
     q: '¿Cómo subo mis canciones?',
-    a: 'Conecta el reproductor a tu ordenador con el cable USB incluido: verás carpetas numeradas y arrastras un MP3 a cada una. Funciona igual en Vynilia y en Vynilia Pro.',
+    a: `Conecta el reproductor a tu ordenador con el cable USB incluido: verás carpetas numeradas y arrastras un MP3 a cada una. Funciona igual en ${TIER_NAMES.base} y en ${TIER_NAMES.pro}.`,
   },
   {
     q: '¿Cómo sabe qué canción poner?',
@@ -496,7 +508,7 @@ const faqs = [
   },
   {
     q: '¿Cuánto tarda en llegar?',
-    a: 'Preparamos tu pedido personalizado en 1 a 3 días hábiles y la entrega tarda entre 3 y 5 días hábiles.',
+    a: `Preparamos tu pedido personalizado en 1 a 3 días hábiles. A partir de ahí la entrega tarda de ${TIERS.base.transit.min} a ${TIERS.base.transit.max} días hábiles con ${TIER_NAMES.base}; con ${TIER_NAMES.pro} el envío es express y tarda de ${TIERS.pro.transit.min} a ${TIERS.pro.transit.max}.`,
   },
 ];
 
@@ -524,7 +536,7 @@ async function loadCriticalData({context, params, request}: Route.LoaderArgs) {
     throw new Error('Expected product handle to be defined');
   }
 
-  const [{product}, storeReviews] = await Promise.all([
+  const [{product, shop}, storeReviews] = await Promise.all([
     storefront.query(PRODUCT_QUERY, {
       variables: {
         handle,
@@ -540,11 +552,15 @@ async function loadCriticalData({context, params, request}: Route.LoaderArgs) {
     throw new Response(null, {status: 404});
   }
 
-  return {product, reviews: [...storeReviews, ...seedReviews]};
+  return {
+    product,
+    reviews: [...storeReviews, ...seedReviews],
+    paymentSettings: shop?.paymentSettings,
+  };
 }
 
 export default function ProductPage({loaderData}: Route.ComponentProps) {
-  const {product, reviews} = loaderData;
+  const {product, reviews, paymentSettings} = loaderData;
   const {open} = useAside();
 
   const selectedVariant = useOptimisticVariant(
@@ -616,7 +632,7 @@ export default function ProductPage({loaderData}: Route.ComponentProps) {
 
   return (
     <>
-      <div className="vynilia-page product-view">
+      <div className="vynilia-page product-view ends-at-faq">
         <div className="product-main">
           <div className="gallery">
             <div className="gallery-main">
@@ -752,6 +768,14 @@ export default function ProductPage({loaderData}: Route.ComponentProps) {
               </AddToCartButton>
             </div>
 
+            <DeliveryTimeline
+              transit={tier.transit}
+              payments={{
+                cards: paymentSettings?.acceptedCardBrands ?? [],
+                wallets: paymentSettings?.supportedDigitalWallets ?? [],
+              }}
+            />
+
             <BuyerReviews />
 
             <div className="info-panels">
@@ -808,38 +832,50 @@ export default function ProductPage({loaderData}: Route.ComponentProps) {
         </div>
 
         <CustomerVideos />
+      </div>
 
-        <section className="compare-section">
-          <h2 className="section-title">⚖️ Compara las dos versiones</h2>
-          <div className="compare-grid">
-            <div className={tierKey === 'base' ? 'compare-card active' : 'compare-card'}>
-              <h3>Vynilia</h3>
-              <ul>
-                <li>
-                  <strong>{TIERS.base.discs} vinilos</strong> con vuestras fotos
-                </li>
-                <li>{TIERS.base.music}</li>
-                <li>{TIERS.base.shipping}</li>
-                <li>{TIERS.base.guaranteeLabel}</li>
-              </ul>
-            </div>
-            <div className={tierKey === 'pro' ? 'compare-card active' : 'compare-card'}>
-              <span className="compare-flag">Más elegida</span>
-              <h3>Vynilia Pro</h3>
-              <ul>
-                <li>
-                  <strong>{TIERS.pro.discs} vinilos</strong> con vuestras fotos
-                </li>
-                <li>{TIERS.pro.music}</li>
-                <li>
-                  <strong>{TIERS.pro.shipping}</strong>
-                </li>
-                <li>
-                  <strong>{TIERS.pro.guaranteeLabel}</strong>
-                </li>
-              </ul>
-            </div>
+      <FaqPanel
+        items={faqs}
+        openIndex={openFaq}
+        onToggle={(index) => setOpenFaq(openFaq === index ? null : index)}
+      />
+
+      <div className="vynilia-page">
+        <section className="compare-section" aria-labelledby="comparativa">
+          {/* The artwork carries its own title, so the heading is kept for
+              structure and screen readers only. */}
+          <h2 id="comparativa" className="sr-only">
+            Compara las dos versiones
+          </h2>
+          <div className="compare-figure">
+            <img
+              src="/images/comparativa-vynilia.webp"
+              width={1536}
+              height={1024}
+              loading="lazy"
+              decoding="async"
+              alt={`Comparativa. ${TIER_NAMES.base}: ${TIERS.base.discs} vinilos con vuestras fotos, sube cualquier canción, ${TIERS.base.shipping.toLowerCase()} y garantía de ${TIERS.base.guaranteeDays} días. ${TIER_NAMES.pro}, la más elegida: ${TIERS.pro.discs} vinilos con vuestras fotos, sube cualquier canción, envío express gratis y garantía premium de ${TIERS.pro.guaranteeDays} días.`}
+            />
           </div>
+          <p className="compare-hint">
+            Desliza para ver la comparativa completa
+          </p>
+        </section>
+
+        <section className="guarantee-banner" aria-labelledby="garantia">
+          {/* Same as the comparison: the artwork carries its own headline. */}
+          <h2 id="garantia" className="sr-only">
+            Garantía premium de {TIERS.pro.guaranteeDays} días con{' '}
+            {TIER_NAMES.pro}
+          </h2>
+          <img
+            src="/images/garantia-60-dias.webp"
+            width={1100}
+            height={1100}
+            loading="lazy"
+            decoding="async"
+            alt={`${TIERS.pro.guaranteeDays} días de garantía con tu ${TIER_NAMES.pro}. Más tiempo para disfrutar, más tranquilidad para ti: garantía premium de ${TIERS.pro.guaranteeDays} días, compra segura y protegida, atención al cliente personalizada y calidad premium garantizada.`}
+          />
         </section>
 
         <section className="tagline-banner">
@@ -862,15 +898,6 @@ export default function ProductPage({loaderData}: Route.ComponentProps) {
 
         <ProductReviews reviews={reviews} productHandle={product.handle} />
 
-      </div>
-
-      <FaqPanel
-        items={faqs}
-        openIndex={openFaq}
-        onToggle={(index) => setOpenFaq(openFaq === index ? null : index)}
-      />
-
-      <div className="vynilia-page">
         <section className="trust-band">
           <div>
             <strong>Hasta 60 días</strong>
@@ -1062,7 +1089,7 @@ function BundleSelector({option}: {option: MappedProductOptions}) {
             <span className="bundle-radio" aria-hidden="true" />
 
             <span className="bundle-body">
-              <span className="bundle-title">{name}</span>
+              <span className="bundle-title">{tierLabel(name)}</span>
               <span className="bundle-subtitle">{tier.subtitle}</span>
             </span>
 
@@ -1277,6 +1304,14 @@ const PRODUCT_QUERY = `#graphql
   ) @inContext(country: $country, language: $language) {
     product(handle: $handle) {
       ...Product
+    }
+    # Drives the payment marks under the buy button, so the row can never
+    # advertise a method the checkout does not actually offer.
+    shop {
+      paymentSettings {
+        acceptedCardBrands
+        supportedDigitalWallets
+      }
     }
   }
   ${PRODUCT_FRAGMENT}

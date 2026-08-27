@@ -11,6 +11,30 @@
  */
 export const HIDDEN_OPTIONS = ['artista'];
 
+/**
+ * How each tier is named in the storefront. The Shopify option values are still
+ * "Standard" and "Pro"; branding them here means the customer sees one name on
+ * the bundle card, in the comparison and in the cart, and renaming the values in
+ * the admin later changes nothing.
+ */
+export const TIER_NAMES = {
+  base: 'Vynilia™',
+  pro: 'Vynilia™ Pro',
+} as const;
+
+/** The displayed name for a tier option value. */
+export function tierLabel(value?: string | null) {
+  return isProValue(value) ? TIER_NAMES.pro : TIER_NAMES.base;
+}
+
+/**
+ * The option that carries the two tiers. The cart only has name/value pairs, so
+ * it needs this to know which value to brand.
+ */
+export function isTierOptionName(name: string) {
+  return /versi[óo]n/i.test(name);
+}
+
 /** The premium tier is whatever option value reads as "Pro", before or after the rename. */
 export function isProValue(value?: string | null) {
   return /\bpro\b/i.test(value ?? '');

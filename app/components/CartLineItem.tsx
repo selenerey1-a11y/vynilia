@@ -5,7 +5,7 @@ import {useVariantUrl} from '~/lib/variants';
 import {Link} from 'react-router';
 import {Money} from '@shopify/hydrogen';
 import {useAside} from './Aside';
-import {isDisplayableOption} from '~/lib/tiers';
+import {isDisplayableOption, isTierOptionName, tierLabel} from '~/lib/tiers';
 import type {
   CartApiQueryFragment,
   CartLineFragment,
@@ -78,7 +78,10 @@ export function CartLineItem({
           <ul className="cart-line-options">
             {selectedOptions.filter(isDisplayableOption).map((option) => (
               <li key={option.name}>
-                {option.name}: {option.value}
+                {option.name}:{' '}
+                {isTierOptionName(option.name)
+                  ? tierLabel(option.value)
+                  : option.value}
               </li>
             ))}
           </ul>

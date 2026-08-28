@@ -1564,22 +1564,30 @@ html:has(.overlay.expanded) .sticky-buy-bar {
   font-weight: 400;
 }
 
+/* Framed identically in both columns. The photos carry a white background of
+   their own, which blended into the near-white base column but read as a card
+   against the Pro column's tint — the frame makes the two match. */
 .tc-photo {
+  box-sizing: border-box;
   width: 100%;
   height: auto;
-  border-radius: 10px;
+  padding: 6px;
+  border: 1px solid rgba(75, 42, 135, 0.09);
+  border-radius: 12px;
+  background: #fff;
 }
 
 /* Block, not inline-flex: as inline boxes the badge and its spacer sat on
-   different baselines (the spacer has no text) and knocked the two photos 4px
-   out of line. */
+   different baselines (the spacer has no text) and knocked the two photos out
+   of line. It labels the column from above rather than lying across the photo,
+   which was eating 11px of the product. */
 .tc-flag,
 .tc-flag-spacer {
   display: flex;
   align-items: center;
   width: fit-content;
   height: 26px;
-  margin: -12px auto 0;
+  margin: 0 auto 10px;
 }
 
 .tc-flag {

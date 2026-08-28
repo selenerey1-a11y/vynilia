@@ -123,6 +123,9 @@ export function TierComparison({
               <span className="sr-only">Característica</span>
             </th>
             <th scope="col" className="tc-head">
+              {/* Matches the height of the Pro column's badge so both photos
+                  and both names stay on exactly the same line. */}
+              <span className="tc-flag-spacer" aria-hidden="true" />
               <img
                 className="tc-photo"
                 src="/images/tier-vynilia.webp"
@@ -132,13 +135,11 @@ export function TierComparison({
                 loading="lazy"
                 decoding="async"
               />
-              {/* Matches the height of the Pro column's badge so both photos
-                  and both names stay on the same line. */}
-              <span className="tc-flag-spacer" aria-hidden="true" />
               <span className="tc-name">{TIER_NAMES.base}</span>
               <span className="tc-tagline">Todo lo esencial</span>
             </th>
             <th scope="col" className="tc-head is-pro">
+              <span className="tc-flag">★ MÁS ELEGIDA</span>
               <img
                 className="tc-photo"
                 src="/images/tier-vynilia-pro.webp"
@@ -148,7 +149,6 @@ export function TierComparison({
                 loading="lazy"
                 decoding="async"
               />
-              <span className="tc-flag">★ MÁS ELEGIDA</span>
               <span className="tc-name">{TIER_NAMES.pro}</span>
               <span className="tc-tagline">Sin límites</span>
             </th>
